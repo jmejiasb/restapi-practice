@@ -19,11 +19,15 @@ const articlesSchema = new mongoose.Schema({
 
 const Article = mongoose.model("Article", articlesSchema);
 
+// Request asking for all articles
+
 app.get("/", (req, res)=>{
     res.redirect("/articles")
 });
 
-app.get("/articles", (req, res)=>{
+app.route("/articles")
+
+.get(function(req, res) {
     Article.find(function(err, foundArticles){
         if(!err){
             res.send(foundArticles);
@@ -31,9 +35,9 @@ app.get("/articles", (req, res)=>{
             res.send(err);
         }
     });
-});
+})
 
-app.post("/articles", (req, res)=>{
+.post(function(req, res) {
     console.log(req.body.title);
     consolte.log(req.body.content);
 
@@ -49,6 +53,51 @@ app.post("/articles", (req, res)=>{
             res.send(err);
         }
     });
+})
+
+.delete(function(req, res){
+
+    Article.deleteMany(function(err){
+        if (!err) {
+            res.send("Succesfully deleted all articles");
+        } else {
+            res.send(err);
+        }
+    });
+});
+
+// Request asking for a specific article
+
+app.route("/articles/:titleArticle")
+
+.get(function(req, res) {
+
+    Article.findOne( {title: req.params.titleArticle}, function(err, foundArticle){
+
+        if (foundArticle) {
+            res.send(foundArticle);
+        } else {
+            res.send("No article with that title was found")
+        }
+    });
+})
+
+.put(function(req, res){
+
+    Article.update(
+        {title: req.params.titleArticle},
+        {title: req.body.title, content: req.body.content}, 
+        {overwrite: true},
+        function(err){
+
+            if (!err) {
+                res.send("Successfully updated article")
+            } else {
+                res.send(err);
+            }
+        }
+    )    
+
 });
 
 app.listen(3000, () => {
